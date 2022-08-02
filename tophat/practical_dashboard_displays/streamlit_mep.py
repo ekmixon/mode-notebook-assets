@@ -12,18 +12,27 @@ _ts = pd.read_csv(_ts_path) \
 
 _category_1 = [f'1{char}' for char in 'ABC']
 _category_2 = [f'2{char}' for char in 'XYZ']
-_t = [datetime.datetime(2020,1,1) + datetime.timedelta(days=x) for x in range(0,25)]
+_t = [
+    datetime.datetime(2020, 1, 1) + datetime.timedelta(days=x)
+    for x in range(25)
+]
+
 
 rows = []
 for t in _t:
     for c1 in _category_1:
-        for c2 in _category_2:
-            rows.append({
+        rows.extend(
+            {
                 'Day': t,
                 'Category 1': c1,
                 'Category 2': c2,
-                'Revenue': 50 + hash(c1) % 10 + (hash(c2) % 2 * _t.index(t)/4) + 10*random(),
-            })
+                'Revenue': 50
+                + hash(c1) % 10
+                + (hash(c2) % 2 * _t.index(t) / 4)
+                + 10 * random(),
+            }
+            for c2 in _category_2
+        )
 
 _df = pd.DataFrame.from_records(rows)
 

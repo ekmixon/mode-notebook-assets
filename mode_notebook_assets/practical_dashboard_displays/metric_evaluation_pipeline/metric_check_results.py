@@ -113,8 +113,14 @@ class MetricCheckResult:
         )
 
         if self.is_override and other.is_override:
-            if not _higher_priority_result:
-                return MetricCheckResult(
+            return (
+                functional_setattr(
+                    _higher_priority_result,
+                    'child_metric_check_results',
+                    _combined_child_metric_check_results,
+                )
+                if _higher_priority_result
+                else MetricCheckResult(
                     valence_score=max(self.valence_score, other.valence_score),
                     priority_score=min(self.priority_score, other.priority_score),
                     is_override=True,
@@ -124,12 +130,8 @@ class MetricCheckResult:
                     valence_description=_combined_valence_description,
                     child_metric_check_results=_combined_child_metric_check_results,
                 )
-            else:
-                return functional_setattr(
-                    _higher_priority_result,
-                    'child_metric_check_results',
-                    _combined_child_metric_check_results
-                )
+            )
+
         elif _higher_override_result:
             return functional_setattr(
                 _higher_override_result,

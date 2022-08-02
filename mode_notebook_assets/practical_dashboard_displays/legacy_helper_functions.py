@@ -26,8 +26,7 @@ def map_actionability_score_to_color(x: float, is_valence_ambiguous=False, is_hi
         return _ambiguous_palette[
             int(min(np.floor(np.abs(x) * (len(_ambiguous_palette) - 1)), len(_ambiguous_palette) - 1))]
     else:
-        _is_good = (is_higher_good and x > 0) or (is_lower_good and x < 0)
-        if _is_good:
+        if _is_good := (is_higher_good and x > 0) or (is_lower_good and x < 0):
             return _good_palette[int(min(np.floor(np.abs(x) * (len(_good_palette) - 1)), len(_good_palette) - 1))]
         else:
             return _bad_palette[int(min(np.floor(np.abs(x) * (len(_bad_palette) - 1)), len(_bad_palette) - 1))]
@@ -40,17 +39,10 @@ def map_actionability_score_to_description(x: float, is_valence_ambiguous=False,
     elif is_valence_ambiguous:
         return 'Ambiguous'
     else:
-        _is_good = (is_higher_good and x > 0) or (is_lower_good and x < 0)
-        if _is_good:
-            if np.abs(x) > 1:
-                return 'Extraordinary'
-            else:
-                return 'Actionably Good'
+        if _is_good := (is_higher_good and x > 0) or (is_lower_good and x < 0):
+            return 'Extraordinary' if np.abs(x) > 1 else 'Actionably Good'
         else:
-            if np.abs(x) > 1:
-                return 'Crisis'
-            else:
-                return 'Actionably Bad'
+            return 'Crisis' if np.abs(x) > 1 else 'Actionably Bad'
 
 
 def map_threshold_labels_to_name_by_configuration(label: str, is_higher_good=True, is_lower_good=False):
@@ -107,8 +99,11 @@ def sparkline(data, point_marker='.', point_size=6, point_alpha=1.0, figsize=(4,
     bio = BytesIO()
     plt.savefig(bio)
     plt.close()
-    html = """<img style="width=100%%;height=auto" src="data:image/png;base64,%s"/>""" % base64.b64encode(bio.getvalue()).decode('utf-8')
-    return html
+    return """<img style="width=100%%;height=auto" src="data:image/png;base64,%s"/>""" % base64.b64encode(
+        bio.getvalue()
+    ).decode(
+        'utf-8'
+    )
 
 
 def dot(color='gray', figsize=(.5, .5), title_text=None, **kwargs):
@@ -125,5 +120,4 @@ def dot(color='gray', figsize=(.5, .5), title_text=None, **kwargs):
     bio = BytesIO()
     plt.savefig(bio, dpi=300)
     plt.close()
-    html = f"""<img title="{'Hover text unavailable.' if title_text is None else title_text}" style="height:40px;width:40px;" src="data:image/png;base64,{base64.b64encode(bio.getvalue()).decode('utf-8')}"/>"""
-    return html
+    return f"""<img title="{'Hover text unavailable.' if title_text is None else title_text}" style="height:40px;width:40px;" src="data:image/png;base64,{base64.b64encode(bio.getvalue()).decode('utf-8')}"/>"""

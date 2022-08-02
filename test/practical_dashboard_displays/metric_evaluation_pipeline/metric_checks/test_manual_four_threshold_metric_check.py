@@ -80,7 +80,7 @@ def test_check_correctness():
     ])
     actual = TEST_CONFIGURATION.run(pd.Series([25, 25, 5, 15, 35, 45]))
 
-    for i in range(0, len(actual)):
+    for i in range(len(actual)):
         assert actual[i] == expected[i]
 
 
@@ -132,5 +132,5 @@ def test_reconfigured_directionality():
         is_lower_better=True,
     ).run(pd.Series([25, 25, 5, 15, 35, 45]))
 
-    for i in range(0, len(actual)):
+    for i in range(len(actual)):
         assert actual[i] == expected[i]

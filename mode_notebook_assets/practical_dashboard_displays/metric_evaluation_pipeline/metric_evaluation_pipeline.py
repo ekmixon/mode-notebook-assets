@@ -72,7 +72,7 @@ class MetricEvaluationPipeline:
             ] if s is not None
         ]
 
-        if len(self._actionability_score_columns) > 0:
+        if self._actionability_score_columns:
             _results = pd.concat(
                 [df for df in
                  [_outside_of_normal_range_results, _sudden_change_results, _change_in_steady_state_long_results] if
@@ -98,11 +98,11 @@ class MetricEvaluationPipeline:
     @staticmethod
     def combine_actionability_scores(record: dict):
         return {
-            # Take the actionability score farthest from zero
             'general_actionability_score': max(record.values(), key=np.abs),
-
-            # Valence is considered ambiguous if at least two actionability scores have different signs
-            'is_valence_ambiguous':        len(set(np.sign(x) for x in record.values() if pd.notna(x) and x != 0)) > 1,
+            'is_valence_ambiguous': len(
+                {np.sign(x) for x in record.values() if pd.notna(x) and x != 0}
+            )
+            > 1,
         }
 
     def get_current_record(self):
@@ -402,7 +402,4 @@ class MetricEvaluationPipeline:
         if enforce_non_negative_yaxis:
             fig.update_yaxes(rangemode='nonnegative')
 
-        if return_html:
-            return fig.to_html()
-        else:
-            return fig
+        return fig.to_html() if return_html else fig

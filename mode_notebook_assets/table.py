@@ -98,12 +98,12 @@ class AgGridTable(object):
         </div>
         '''.format(div_id=div_id)
 
-        self.html = "<html>" + self.header + self.body + self.csv_export_button + "</html>"
+        self.html = f"<html>{self.header}{self.body}{self.csv_export_button}</html>"
 
     def unquote_function_names(self, json_str, funcs):
-      for f in funcs:
-        json_str = json_str.replace('"{}"'.format(f), "{}".format(f))
-      return json_str
+        for f in funcs:
+            json_str = json_str.replace(f'"{f}"', f"{f}")
+        return json_str
 
     def dataframe_dtypes_to_column_definitions(self, df, url_columns) -> list:
         """
@@ -118,9 +118,8 @@ class AgGridTable(object):
                 colDef["filter"] = 'agDateColumnFilter'
                 colDef["valueFormatter"] = 'dateFormatter'
 
-            if url_columns != []:
-                if col in url_columns:
-                  colDef["cellRenderer"] = 'urlFormatter'
+            if url_columns != [] and col in url_columns:
+                colDef["cellRenderer"] = 'urlFormatter'
 
             colDefs.append(colDef)
 

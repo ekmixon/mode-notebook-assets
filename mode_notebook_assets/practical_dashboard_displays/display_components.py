@@ -20,17 +20,20 @@ def html_div_grid(html_elements:list, table_width='98%', cell_padding='5px', col
     def cell_div(s):
         return f'<div style="width: {"{}%".format(round(100/len(html_elements)))}; display: table-cell; padding:{cell_padding}">{s}</div>'
 
-    html_element_rows = [html_elements[i*columns:min(i*columns+columns, len(html_elements))] for i in range(0, len(html_elements)//columns+1)]
+    html_element_rows = [
+        html_elements[
+            i * columns : min(i * columns + columns, len(html_elements))
+        ]
+        for i in range(len(html_elements) // columns + 1)
+    ]
+
     html_format = table_div(''.join(row_div(''.join(cell_div(e) for e in l)) for l in html_element_rows))
     return html_format
 
 
 def plotly_div_grid(fig_list: list, **kwargs):
     def handle_element(e):
-        if isinstance(e, str):
-            return e
-        else:
-            return e.to_html()
+        return e if isinstance(e, str) else e.to_html()
 
     return html_div_grid(
         [handle_element(fig) for fig in fig_list],
@@ -87,9 +90,6 @@ def convert_metric_status_table_to_html(df: pd.DataFrame, title=None, include_ac
         _df = _df.sort_values(by=['Actionability Score'], ascending=False)
     elif sort_records_by_name:
         _df = _df.sort_values(by=['Metric'])
-    else:
-        pass
-
     if include_actionability_score is False and 'Actionability Score' in _df.columns:
         _df = _df[[c for c in _df.columns if c != 'Actionability Score']]
 
@@ -145,10 +145,7 @@ class DatasetEvaluationGenerator:
 
     def generate_grouping_set_series_lookup(self):
         def convert_to_tuple(x):
-            if isinstance(x, str):
-                return (x, )
-            else:
-                return tuple(x)
+            return (x, ) if isinstance(x, str) else tuple(x)
 
         _df = self.df.copy().reset_index()
 
@@ -180,16 +177,15 @@ class DatasetEvaluationGenerator:
 
         _metric_evaluation_pipeline_options = (metric_evaluation_pipeline_options or {})
 
-        _pipeline_lookup = {
+        return {
             key: MetricEvaluationPipeline(
                 series,
                 metric_name=key,
                 measure_name=self.measure_column,
                 **_metric_evaluation_pipeline_options,
-            ) for key, series in _data_series_lookup.items()
+            )
+            for key, series in _data_series_lookup.items()
         }
-
-        return _pipeline_lookup
 
     def generate_actionability_time_series_figures(self, actionability_time_series_options=None):
 
@@ -372,27 +368,39 @@ class CumulativeTargetAttainmentDisplay:
         current_period = max(self._cleaned_actual.index)
         current_period_index = self._cleaned_actual.index.get_loc(current_period)
 
-        self.target_attainment_df = pd.DataFrame(index=self.target_period_index).assign(
-            is_current_period=pd.Series([False] * (len(self._cleaned_actual)-1) + [True], index=self._cleaned_actual.index),
+        self.target_attainment_df = pd.DataFrame(
+            index=self.target_period_index
+        ).assign(
+            is_current_period=pd.Series(
+                [False] * (len(self._cleaned_actual) - 1) + [True],
+                index=self._cleaned_actual.index,
+            ),
             actual=self._cleaned_actual,
             actual_cumulative=self._cleaned_actual.cumsum(),
             target_interpolated=interpolated_period_target,
-            target_cumulative=lambda df: df.target_interpolated.cumsum() + period_target_remainder,
-            attainment_pacing_proportion=lambda df: df.actual_cumulative/df.target_cumulative,
+            target_cumulative=lambda df: df.target_interpolated.cumsum()
+            + period_target_remainder,
+            attainment_pacing_proportion=lambda df: df.actual_cumulative
+            / df.target_cumulative,
             actionability_hover_text=lambda df: df.attainment_pacing_proportion.apply(
-                lambda x: 'Pacing to {}% of target.'.format(int(100 * x)) if not pd.isnull(x) else ''
+                lambda x: ''
+                if pd.isnull(x)
+                else f'Pacing to {int(100 * x)}% of target.'
             ),
             actionability_scores=(
                 lambda df: df.apply(
                     lambda r: self.calculate_target_attainment_valence(
                         actual_value=r['actual_cumulative'],
                         target_value=r['target_cumulative'],
-                    ) if r['is_current_period'] else 0,
-                    axis=1
+                    )
+                    if r['is_current_period']
+                    else 0,
+                    axis=1,
                 )
             ),
-            actionability_actuals=lambda df: df.actual_cumulative,  # initialize as empty; only last period will be calculated
+            actionability_actuals=lambda df: df.actual_cumulative,
         )
+
 
         self.target_attainment_df.actionability_scores[current_period_index] = self.calculate_target_attainment_valence(
             actual_value=self.target_attainment_df.actual_cumulative[current_period_index],

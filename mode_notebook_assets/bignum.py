@@ -152,17 +152,18 @@ class PlotlyBigNumberGrid():
 
         if footer is not None:
             # Add the footer
-            self.add_label(row=row,
-                           col=col,
-                           text=footer,
-                           font=go.layout.annotation.Font(
-                               family='Graphik, Helvetica, Arial, sans-serif',
-                               size=18,
-                               color=footer_color if footer_color else 'rgb(99, 115, 129)',
-                           ),
-                           x=0,
-                           y=-0.25,
-                           )
+            self.add_label(
+                row=row,
+                col=col,
+                text=footer,
+                font=go.layout.annotation.Font(
+                    family='Graphik, Helvetica, Arial, sans-serif',
+                    size=18,
+                    color=footer_color or 'rgb(99, 115, 129)',
+                ),
+                x=0,
+                y=-0.25,
+            )
 
     def _get_axis_num(self):
         self.axis_count += 1
@@ -220,83 +221,91 @@ class PlotlyBigNumberGrid():
         y_top = y_bottom + height * self.cell_height
 
         # First, add axis for the sparkline
-        self.fig.layout['xaxis{}'.format(axis_index)] = dict(
+        self.fig.layout[f'xaxis{axis_index}'] = dict(
             domain=[x_left, x_right],
             showgrid=False,
             zeroline=False,
             showticklabels=False,
             automargin=False,
-            anchor='y{}'.format(axis_index),
+            anchor=f'y{axis_index}',
         )
 
-        if xaxis:
-            self.fig.layout['xaxis{}'.format(axis_index)].update(xaxis)
 
-        self.fig.layout['yaxis{}'.format(axis_index)] = dict(
+        if xaxis:
+            self.fig.layout[f'xaxis{axis_index}'].update(xaxis)
+
+        self.fig.layout[f'yaxis{axis_index}'] = dict(
             domain=[y_bottom, y_top],
             showgrid=False,
             zeroline=False,
             showticklabels=False,
             automargin=False,
-            anchor='x{}'.format(axis_index),
+            anchor=f'x{axis_index}',
         )
 
+
         if yaxis:
-            self.fig.layout['yaxis{}'.format(axis_index)].update(yaxis)
+            self.fig.layout[f'yaxis{axis_index}'].update(yaxis)
 
         # Next, add the actual sparkline.
 
         if value < target:  # We have not yet reached the target
             value_color = self.PROGRESS_COLOR
-            if goal_type and goal_invert:
-                value_color = self.SUCCESS_COLOR
-            elif goal_type:
-                value_color = self.FAILURE_COLOR
+            if goal_type:
+                value_color = self.SUCCESS_COLOR if goal_invert else self.FAILURE_COLOR
+            self._add_bar_chart(
+                xaxis=f'x{axis_index}',
+                yaxis=f'y{axis_index}',
+                value=value,
+                color=value_color,
+                hover_text=value_txt,
+            )
 
-            self._add_bar_chart(xaxis='x{}'.format(axis_index),
-                                yaxis='y{}'.format(axis_index),
-                                value=value,
-                                color=value_color,
-                                hover_text=value_txt,
-                                )
-            self._add_bar_chart(xaxis='x{}'.format(axis_index),
-                                yaxis='y{}'.format(axis_index),
-                                value=target - value,
-                                color=self.UNFILLED_COLOR,
-                                hover_text=target_txt,
-                                )
+            self._add_bar_chart(
+                xaxis=f'x{axis_index}',
+                yaxis=f'y{axis_index}',
+                value=target - value,
+                color=self.UNFILLED_COLOR,
+                hover_text=target_txt,
+            )
+
 
         else:  # value >= target and so we have reached our target
             value_color = self.SUCCESS_COLOR
             if goal_type and goal_invert:
                 value_color = self.FAILURE_COLOR
 
-            self._add_bar_chart(xaxis='x{}'.format(axis_index),
-                                yaxis='y{}'.format(axis_index),
-                                value=target,
-                                color=self.UNFILLED_COLOR,
-                                hover_text=target_txt,
-                                base=0,
-                                )
-            self._add_bar_chart(xaxis='x{}'.format(axis_index),
-                                yaxis='y{}'.format(axis_index),
-                                value=value,
-                                color=value_color,
-                                hover_text=value_txt,
-                                base=0,
-                                )
+            self._add_bar_chart(
+                xaxis=f'x{axis_index}',
+                yaxis=f'y{axis_index}',
+                value=target,
+                color=self.UNFILLED_COLOR,
+                hover_text=target_txt,
+                base=0,
+            )
+
+            self._add_bar_chart(
+                xaxis=f'x{axis_index}',
+                yaxis=f'y{axis_index}',
+                value=value,
+                color=value_color,
+                hover_text=value_txt,
+                base=0,
+            )
+
             targ = dict(
                 type='line',
                 x0=target,
                 x1=target,
-                y0=-.5,
-                y1=.5,
-                xref='x{}'.format(axis_index),
-                yref='y{}'.format(axis_index),
+                y0=-0.5,
+                y1=0.5,
+                xref=f'x{axis_index}',
+                yref=f'y{axis_index}',
                 line=dict(
                     color='#000000',
-                )
+                ),
             )
+
             self.fig.layout.shapes += (targ,)
 
     def plot(self):
@@ -369,24 +378,24 @@ class PlotlyBigNumber():
             go.layout.Annotation(
                 font=go.layout.annotation.Font(size=14),
                 showarrow=False,
-                text='{}'.format(header),
-                x=.5,
-                y=.8
+                text=f'{header}',
+                x=0.5,
+                y=0.8,
             ),
             go.layout.Annotation(
                 font=go.layout.annotation.Font(size=50),
                 showarrow=False,
-                text='{}'.format(body),
-                x=.5,
-                y=.5
+                text=f'{body}',
+                x=0.5,
+                y=0.5,
             ),
             go.layout.Annotation(
                 font=go.layout.annotation.Font(size=14),
                 showarrow=False,
-                text='{}'.format(footer),
-                x=.5,
-                y=.2
-            )
+                text=f'{footer}',
+                x=0.5,
+                y=0.2,
+            ),
         ]
 
     def plot(self):

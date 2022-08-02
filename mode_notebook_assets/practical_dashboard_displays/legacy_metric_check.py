@@ -67,11 +67,7 @@ def change_in_steady_state_long(s: pd.Series, minimum_periods=14) -> pd.DataFram
                         and x != mean_of_historical_training_values
                 )
 
-                if increment_long_run_check:
-                    current_long_run = current_long_run + 1
-                else:
-                    current_long_run = 0
-
+                current_long_run = current_long_run + 1 if increment_long_run_check else 0
                 last_value_greater_than_historical_mean = current_value_greater_than_historical_mean
                 last_value_less_than_historical_mean = current_value_less_than_historical_mean
 
